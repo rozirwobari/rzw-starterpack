@@ -4,7 +4,7 @@ local playerStarterpack = {}
 local function CreateDatabase()
     MySQL.query(
     [[
-        CREATE TABLE IF NOT EXISTS `rzw_staterpack` (
+        CREATE TABLE IF NOT EXISTS `rzw_starterpack` (
             `id` int(11) NOT NULL AUTO_INCREMENT,
             `identifier` varchar(150) NOT NULL,
             `name` varchar(250) NOT NULL,
@@ -25,6 +25,7 @@ end
 
 local function LoadedStarterpack()
     CreateDatabase()
+    Wait(3000)
     local response = MySQL.query.await('SELECT * FROM rzw_starterpack', {})
     if response then
         for key, value in pairs(response) do
