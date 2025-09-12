@@ -1,5 +1,6 @@
 # rzw-starterpack for ESX Legacy
 FiveM Resource Starterpack Simple for ESX Legacy Framework with ox_lib
+<img src="https://rozirwobari.my.id/assets/img/rzw-starterpack.png">
 
 ## Dependency
 * [oxmysql](https://github.com/overextended/oxmysql/releases)
