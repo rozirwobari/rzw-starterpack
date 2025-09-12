@@ -36,12 +36,9 @@ end
 
 lib.callback.register('rzw-starterpack:server:Checked', function(source)
     local xPlayer = ESX.GetPlayerFromId(source)
-    local row = MySQL.single.await('SELECT identifier FROM rzw_starterpack WHERE identifier = ? LIMIT 1', {
-        xPlayer.identifier
-    })
     local Config = lib.load('shared.main')
     Wait(500)
-    if playerStarterpack[xPlayer.identifier] or row?.identifier then
+    if playerStarterpack[xPlayer.identifier] then
         TriggerClientEvent('ox_lib:notify', source, {
             title = 'Starterpack',
             description = 'You have already taken the starterpack.',
@@ -58,6 +55,28 @@ lib.callback.register('rzw-starterpack:server:Checked', function(source)
         })
         return false
     else
+        local row = MySQL.single.await('SELECT identifier FROM rzw_starterpack WHERE identifier = ? LIMIT 1', {
+            xPlayer.identifier
+        })
+        if row?.identifier then
+            TriggerClientEvent('ox_lib:notify', source, {
+                title = 'Starterpack',
+                description = 'You have already taken the starterpack.',
+                duration = 8000,
+                type = 'error',
+                position = 'top',
+                style = {
+                    backgroundColor = '#141517',
+                    color = '#C1C2C5',
+                    ['.description'] = {
+                        color = '#909296'
+                    }
+                }
+            })
+            playerStarterpack[row?.identifier] = row
+            return false
+        end
+
         local os_time = os.time()
         local success, id = pcall(function ()
             local id = MySQL.insert.await('INSERT INTO rzw_starterpack (identifier, name, time) VALUES (?, ?, ?)', {
