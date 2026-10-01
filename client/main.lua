@@ -1,44 +1,10 @@
+local RZWStarterpack = {}
 local Config = lib.load('shared.main')
 
-local function CreatePedStarterpack(model, coords)
-    lib.requestModel(model, 10000)
-    local npc = CreatePed(4, model, coords.x, coords.y, (coords.z - 1.0), coords.w, false, true)
-    SetEntityInvincible(npc, true)
-    SetEntityAsMissionEntity(npc, true, true)
-    SetPedRandomComponentVariation(npc, 1)
-    SetBlockingOfNonTemporaryEvents(npc, true)
-    SetPedDiesWhenInjured(npc, false)
-    SetPedCanPlayAmbientAnims(npc, true)
-    SetPedCanRagdollFromPlayerImpact(npc, false)
-    FreezeEntityPosition(npc, true)
-    return npc
-end
-
-local function GetStarterpack()
-    local Checked = lib.callback.await('rzw-starterpack:server:Checked', false)
-    if Checked then
-        return lib.notify({
-            title = 'Starterpack',
-            description = 'You have successfully taken the starterpack.',
-            duration = 8000,
-            type = 'success',
-            position = 'top',
-            style = {
-                backgroundColor = '#141517',
-                color = '#C1C2C5',
-                ['.description'] = {
-                    color = '#909296'
-                }
-            }
-        })
-    end
-end
-
-Citizen.CreateThread(function ()
-    Wait(1000)
+function RZWStarterpack:Init()
     for key, value in pairs(Config.Location) do
         if value.ped and value.ped ~= '' then
-            CreatePedStarterpack(value.ped, value.coords)
+            self:CreatePed(value.ped, value.coords)
         end
         exports.ox_target:addSphereZone({
             coords = vec3(value.coords.x, value.coords.y, value.coords.z),
@@ -49,10 +15,47 @@ Citizen.CreateThread(function ()
                     icon = "fa-solid fa-gift",
                     distance = 2.0,
                     onSelect = function ()
-                        GetStarterpack()
+                        self:GetStarterpack()
                     end
                 }
             }
         })
     end
-end)
+end
+
+function RZWStarterpack:GetStarterpack()
+    local CheckPlayer = lib.callback.await('rzw-starterpack:server:CheckPlayer', false)
+    if not CheckPlayer then return end
+    if lib.progressBar({
+        duration = 10000,
+        label = 'Get Starterpack',
+        useWhileDead = false,
+        canCancel = true,
+        disable = {
+            move = true,
+            car = true,
+            combat = true,
+            sprint = true,
+        },
+        anim = {
+            scenario = 'CODE_HUMAN_MEDIC_TIME_OF_DEATH',
+        }
+    }) then
+        TriggerServerEvent("rzw-starterpack:server:GetStarterpack")
+    end
+end
+
+function RZWStarterpack:CreatePed(model, coords)
+    lib.requestModel(model, 10000)
+    local npc = CreatePed(4, model, coords.x, coords.y, (coords.z - 1.0), coords.w, false, true)
+    SetEntityInvincible(npc, true)
+    SetEntityAsMissionEntity(npc, true, true)
+    SetPedRandomComponentVariation(npc, 1)
+    SetBlockingOfNonTemporaryEvents(npc, true)
+    SetPedDiesWhenInjured(npc, false)
+    SetPedCanPlayAmbientAnims(npc, true)
+    SetPedCanRagdollFromPlayerImpact(npc, false)
+    FreezeEntityPosition(npc, true)
+end
+
+RZWStarterpack:Init()
